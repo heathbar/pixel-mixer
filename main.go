@@ -13,14 +13,19 @@ func main() {
 
 	config := loadConfiguration(*configFile)
 
-	fmt.Println(config.Mqtt.Server)
-	fmt.Println(config.Opc.DestinationServer)
+	mixerOutputEnabler := make(chan bool)
+	mixerInputSelector := make(chan int)
+	rgbInputColor := make(chan *Color)
+	mixerOutput := make(chan *Frame)
 
-	// don't stop believing
-	<-make(chan int)
+	mixer := makeMixer(config, mixerOutputEnabler, mixerInputSelector, mixerOutput)
+
+	startMqtt(config, mixerOutputEnabler, mixerInputSelector, rgbInputColor)
+
+	mixer.loop()
 }
 
-func loadConfiguration(file string) Config {
+func loadConfiguration(file string) *Config {
 	var config Config
 	configFile, err := os.Open(file)
 	defer configFile.Close()
@@ -29,5 +34,5 @@ func loadConfiguration(file string) Config {
 	}
 	jsonParser := json.NewDecoder(configFile)
 	jsonParser.Decode(&config)
-	return config
+	return &config
 }
