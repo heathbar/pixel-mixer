@@ -16,7 +16,7 @@ func main() {
 
 	// parse config file
 	config := loadConfiguration(*configFile)
-	pixelCount = config.Opc.PixelCount
+	pixelCount = config.PixelCount
 
 	// setup communication channels
 	mixerOutputEnabler := make(chan bool)

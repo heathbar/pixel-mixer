@@ -6,7 +6,8 @@ const rgbInput = 0
 
 // Config represents the application configuration
 type Config struct {
-	Mqtt struct {
+	PixelCount int `json:"pixel-count,omitempty"`
+	Mqtt       struct {
 		Server string `json:"server"`
 		Topics struct {
 			Power string `json:"power"`
@@ -17,7 +18,6 @@ type Config struct {
 	Inputs []ConfigInput
 	Opc    struct {
 		DestinationServer string `json:"destination-server"`
-		PixelCount        int    `json:"pixel-count,omitempty"`
 	}
 }
 
