@@ -7,11 +7,14 @@ import (
 	"os"
 )
 
+var pixelCount int
+
 func main() {
 	configFile := flag.String("c", "config.json", "Specify a configuration file. Default: config.json")
 	flag.Parse()
 
 	config := loadConfiguration(*configFile)
+	pixelCount = config.Opc.PixelCount
 
 	mixerOutputEnabler := make(chan bool)
 	mixerInputSelector := make(chan int)
@@ -22,6 +25,7 @@ func main() {
 
 	startMqtt(config, mixerOutputEnabler, mixerInputSelector, rgbInputColor)
 
+	go startOpc(config.Opc.DestinationServer, mixerOutput)
 	mixer.loop()
 }
 

@@ -16,6 +16,7 @@ type Config struct {
 	}
 	Opc struct {
 		DestinationServer string `json:"destination-server"`
+		PixelCount        int    `json:"pixel-count,omitempty"`
 	}
 }
 
@@ -37,5 +38,6 @@ type Mixer struct {
 	outputEnabled bool
 	inputSelector chan int
 	selectedInput int
+	pixelCount    int
 	progress      float64
 }

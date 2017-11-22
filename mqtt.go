@@ -44,8 +44,8 @@ func startMqtt(config *Config, mixerOutputEnabler chan bool, mixerInputSelector 
 
 	c := mqtt.NewClient(opts)
 	if token := c.Connect(); token.Wait() && token.Error() != nil {
-		fmt.Println("MQTT connection error")
-		panic(token.Error())
+		fmt.Println(token.Error())
+		os.Exit(1)
 	}
 
 	if token := c.Subscribe(config.Mqtt.Topics.Power, 0, nil); token.Wait() && token.Error() != nil {
