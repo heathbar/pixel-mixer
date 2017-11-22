@@ -14,10 +14,18 @@ type Config struct {
 			Color string `json:"color"`
 		}
 	}
-	Opc struct {
+	Inputs []ConfigInput
+	Opc    struct {
 		DestinationServer string `json:"destination-server"`
 		PixelCount        int    `json:"pixel-count,omitempty"`
 	}
+}
+
+// ConfigInput defines an input from application configuration
+type ConfigInput struct {
+	Type        string `json:"type"`
+	MqttMessage string `json:"mqtt-message"`
+	Port        int    `json:"port"`
 }
 
 // Color holds RGB pixel values
@@ -39,5 +47,17 @@ type Mixer struct {
 	inputSelector chan int
 	selectedInput int
 	pixelCount    int
-	progress      float64
+	fader         struct {
+		isFading bool
+		progress float64
+		state    bool
+		alpha    struct {
+			input       *chan *Frame
+			cachedFrame *Frame
+		}
+		bravo struct {
+			input       *chan *Frame
+			cachedFrame *Frame
+		}
+	}
 }

@@ -10,22 +10,30 @@ import (
 var pixelCount int
 
 func main() {
+	// parse cmd line args
 	configFile := flag.String("c", "config.json", "Specify a configuration file. Default: config.json")
 	flag.Parse()
 
+	// parse config file
 	config := loadConfiguration(*configFile)
 	pixelCount = config.Opc.PixelCount
 
+	// setup communication channels
 	mixerOutputEnabler := make(chan bool)
 	mixerInputSelector := make(chan int)
 	rgbInputColor := make(chan *Color)
 	mixerOutput := make(chan *Frame)
 
-	mixer := makeMixer(config, mixerOutputEnabler, mixerInputSelector, mixerOutput)
-
+	// start the inputs and outputs
 	startMqtt(config, mixerOutputEnabler, mixerInputSelector, rgbInputColor)
+	startOpc(config.Opc.DestinationServer, mixerOutput)
 
-	go startOpc(config.Opc.DestinationServer, mixerOutput)
+	// create the mixer
+	mixer := makeMixer(len(config.Inputs)+1, mixerOutputEnabler, mixerInputSelector, mixerOutput)
+
+	// wire up all the configured inputs
+	startFrameGenerators(config, mixer, rgbInputColor)
+
 	mixer.loop()
 }
 

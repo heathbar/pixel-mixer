@@ -26,13 +26,13 @@ func startMqtt(config *Config, mixerOutputEnabler chan bool, mixerInputSelector 
 		case config.Mqtt.Topics.Input:
 			// TODO: add inputs to config and map input name to input number
 		case config.Mqtt.Topics.Color:
-			// c, err := parseColor(message)
-			// if err != nil {
-			// 	fmt.Printf("Parse Error: %s\n", *err)
-			// 	return
-			// }
+			c, err := parseColor(message)
+			if err != nil {
+				fmt.Printf("Parse Error: %s\n", *err)
+				return
+			}
 			mixerInputSelector <- rgbInput
-			// rgbInputColor <- c
+			rgbInputColor <- c
 		}
 	}
 

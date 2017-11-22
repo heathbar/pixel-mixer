@@ -7,6 +7,12 @@
             "color": "pixel-mixer/color"
         }
     },
+    "inputs":[
+        {
+            "type": "rainbow",
+            "mqtt-message": "rainbow"
+        }
+    ],
     "opc": {
         "destination-server": "localhost:7890",
         "pixel-count": 30

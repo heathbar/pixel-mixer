@@ -9,26 +9,28 @@ import (
 
 func startOpc(server string, mixerOutput chan *Frame) {
 	client := opc.NewClient()
-	frameCounter := 0
-	timer := time.NewTicker(time.Second)
 
 	if err := client.Connect("tcp", server); err != nil {
 		fmt.Println("Could not connect to destination OPC server", err)
 	}
 
-	for {
-		select {
-		case f := <-mixerOutput:
-			//fmt.Print(".")
-			frameCounter++
-			if err := client.Send(&f.Message); err != nil {
-				fmt.Println("Couldn't send frame", err)
+	go func(client *opc.Client, mixerOutput chan *Frame) {
+		frameCounter := 0
+		timer := time.NewTicker(time.Second)
+
+		for {
+			select {
+			case f := <-mixerOutput:
+				frameCounter++
+				if err := client.Send(&f.Message); err != nil {
+					fmt.Println("Couldn't send frame", err)
+				}
+			case <-timer.C:
+				//fmt.Printf("%d fps\n", frameCounter)
+				frameCounter = 0
 			}
-		case <-timer.C:
-			//fmt.Printf("%d fps\n", frameCounter)
-			frameCounter = 0
 		}
-	}
+	}(client, mixerOutput)
 }
 
 func makeFrame() *Frame {
