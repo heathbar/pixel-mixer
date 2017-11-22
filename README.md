@@ -23,7 +23,7 @@ The `inputs` section defines which inputs should be available on the mixer.
 The `opc` section defines the size and target of the output. Typically this would be a fadecandy server.
 
 ### Extremely basic example configuration
-Without defining any inputs, the mixer can only fade bwtween solid colors using the built-in solid color generator
+Without defining any inputs, the mixer can only fade between solid colors using the built-in solid color generator
 ```JavaScript
 {
     "mqtt": {
@@ -41,12 +41,19 @@ Without defining any inputs, the mixer can only fade bwtween solid colors using 
     }
 }
 ```
-With this configuration you can send RGB colors via MQTT message to the `pixel-mixer/color` topic. For example:
+Using this simple configuration pixel-mixer has limitted functionality
 ```bash
 # mosquitto_pub is a utility from the mosquitto-clients package.
 # mosquitto_pub is not required, but useful for working with MQTT.
+
+# RGB colors can be set via MQTT message to the `pixel-mixer/color` topic:
 mosquitto_pub -h mqtt.example.com -t pixel-mixer/color -m "255,0,105"
+
+# Output can be disabled/enabled using the `pixel-mixer/switch` topic:
+mosquitto_pub -h mqtt.example.com -t pixel-mixer/switch -m "OFF"
+mosquitto_pub -h mqtt.example.com -t pixel-mixer/switch -m "ON"
 ```
+
 
 ### Example configuration for two OPC inputs
 This example assumes you're running pixel generation scripts from the [openpixelcontrol](https://github.com/zestyping/openpixelcontrol) examples.
@@ -84,12 +91,22 @@ raver_plaid.py localhost:7891 &
 conway.py -s localhost:7892 &
 ```
 
-These example scripts will now connect to pixel-mixer instead of directly to your OPC device. Using the mqtt topic and messages defined in the config, you can now fade between the two inputs as follows:
+These example scripts will now connect to pixel-mixer instead of directly to your OPC device. Using the MQTT topic and messages defined in the config, you can now fade between the two inputs as follows:
 
 ```bash
 # mosquitto_pub is a utility from the mosquitto-clients package.
 # mosquitto_pub is not required, but useful for working with MQTT.
+
+# Fade to port 7891 where raver_plaid is sending frames
 mosquitto_pub -h mqtt.example.com -t pixel-mixer/input -m "raver_plaid"
-# or
+
+# Fade to port 7892 where conway is sending frames
 mosquitto_pub -h mqtt.example.com -t pixel-mixer/input -m "conway"
+
+# Fade to solid blue
+mosquitto_pub -h mqtt.example.com -t pixel-mixer/color -m "0,0,255"
+
+# Disable/Enable output
+mosquitto_pub -h mqtt.example.com -t pixel-mixer/switch -m "OFF"
+mosquitto_pub -h mqtt.example.com -t pixel-mixer/switch -m "ON"
 ```
