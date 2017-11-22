@@ -1,0 +1,13 @@
+{
+    "mqtt": {
+        "server": "tcp://localhost:1883",
+        "topics": {
+            "power": "pixel-mixer/switch",
+            "input": "pixel-mixer/input",
+            "color": "pixel-mixer/color"
+        }
+    },
+    "opc": {
+        "destination-server": "localhost:7890"
+    }
+}
