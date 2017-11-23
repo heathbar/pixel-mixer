@@ -1,7 +1,11 @@
 package main
 
 import (
+	"math"
+	"strconv"
 	"time"
+
+	opc "github.com/kellydunn/go-opc"
 )
 
 func startFrameGenerators(config *Config, mixer *Mixer, rgbInputColor chan *Color) {
@@ -15,6 +19,12 @@ func startFrameGenerators(config *Config, mixer *Mixer, rgbInputColor chan *Colo
 			go channelWalkFrameGenerator(mixer.inputs[i+1])
 		case "rainbow":
 			go rainbowFrameGenerator(mixer.inputs[i+1])
+		case "red-wave":
+			go redWaveFrameGenerator(mixer.inputs[i+1])
+		case "purple-wave":
+			go purpleWaveFrameGenerator(mixer.inputs[i+1])
+		case "opc":
+			go opcFrameForwarder(config.Inputs[i].Port, mixer.inputs[i+1])
 		}
 	}
 }
@@ -109,4 +119,69 @@ func channelWalkFrameGenerator(output chan *Frame) {
 		channelWalk(Color{0, 255, 0}, output)
 		channelWalk(Color{0, 0, 255}, output)
 	}
+}
+
+func redWaveFrameGenerator(output chan *Frame) {
+	const DURATION = 10
+	const FPS = 60
+	const TOTAL_FRAMES = DURATION * FPS
+	const DELTA_PER_FRAME = 2 * math.Pi / TOTAL_FRAMES
+
+	for {
+		for frameNumber := 0; frameNumber < TOTAL_FRAMES; frameNumber++ {
+			f := makeFrame()
+			for pixelNumber := 0; pixelNumber < pixelCount; pixelNumber++ {
+				t := math.Sin(float64(frameNumber)*DELTA_PER_FRAME + float64(pixelNumber)*0.1)
+				r := float64(160) + float64(72)*t
+				g := math.Max(0, float64(48)+float64(128)*t)
+				b := 0
+
+				f.Message.SetPixelColor(pixelNumber, uint8(r), uint8(g), uint8(b))
+			}
+			output <- f
+			time.Sleep(16 * time.Millisecond) // roughly 60fps
+		}
+	}
+}
+
+func purpleWaveFrameGenerator(output chan *Frame) {
+	const DURATION = 10
+	const FPS = 60
+	const TOTAL_FRAMES = DURATION * FPS
+	const DELTA_PER_FRAME = 2 * math.Pi / TOTAL_FRAMES
+	f := makeFrame()
+
+	for {
+		for frameNumber := 0; frameNumber < TOTAL_FRAMES; frameNumber++ {
+
+			for pixelNumber := 0; pixelNumber < pixelCount; pixelNumber++ {
+				t := math.Sin(float64(frameNumber)*DELTA_PER_FRAME + float64(pixelNumber)*0.1)
+				r := float64(150) + float64(60)*t
+				g := 0
+				b := math.Min(255, float64(255)+float64(30)*t)
+
+				f.Message.SetPixelColor(pixelNumber, uint8(r), uint8(g), uint8(b))
+			}
+			output <- f
+			time.Sleep(16 * time.Millisecond) // roughly 60fps
+		}
+	}
+}
+
+// Write sends an OPC message to the given device
+func (device OpcForwarderDevice) Write(message *opc.Message) error {
+	device.output <- &Frame{*message}
+	return nil
+}
+
+// Channel retrieves the OPC channel number from the given device
+func (device OpcForwarderDevice) Channel() uint8 {
+	return device.channel
+}
+
+func opcFrameForwarder(port int, output chan *Frame) {
+	server := opc.NewServer()
+	server.RegisterDevice(OpcForwarderDevice{0, output})
+	go server.ListenOnPort("tcp", ":"+strconv.Itoa(port))
+	server.Process()
 }

@@ -61,3 +61,9 @@ type Mixer struct {
 		}
 	}
 }
+
+// OpcForwarderDevice defines an object that an OPC server can send data to
+type OpcForwarderDevice struct {
+	channel uint8
+	output  chan *Frame
+}
