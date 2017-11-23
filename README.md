@@ -113,3 +113,48 @@ mosquitto_pub -h mqtt.example.com -t pixel-mixer/color -m "0,0,255"
 mosquitto_pub -h mqtt.example.com -t pixel-mixer/switch -m "OFF"
 mosquitto_pub -h mqtt.example.com -t pixel-mixer/switch -m "ON"
 ```
+### Special Inputs
+If an external pixel generator is not available, pixel-mixer includes a few built-in inputs to test your setup. 
+
+#### Solid Color
+RGB colors can be set via MQTT message to the MQTT topic specified in configuration under mqtt > topics > color:
+```bash
+mosquitto_pub -h mqtt.example.com -t pixel-mixer/color -m "0,25,205"
+```
+#### Channel Walk
+This input can be enable by first including it in the config:
+```bash
+
+```JavaScript
+{
+    "inputs":[
+        {
+            "type": "channel-walk",
+            "mqtt-message": "channel-walk"
+        }
+    ]
+}
+```
+To activate it, send the appropriate MQTT message.
+```bash
+mosquitto_pub -h mqtt.example.com -t pixel-mixer/input -m "channel-walk"
+```
+#### Rainbow
+This input can be enable by first including it in the config:
+```bash
+
+```JavaScript
+{
+    "inputs":[
+        {
+            "type": "rainbow",
+            "mqtt-message": "rainbow"
+        }
+    ]
+}
+```
+To activate it, send the appropriate MQTT message.
+```bash
+mosquitto_pub -h mqtt.example.com -t pixel-mixer/input -m "rainbow"
+```
+
