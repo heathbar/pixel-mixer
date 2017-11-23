@@ -11,6 +11,8 @@ func startFrameGenerators(config *Config, mixer *Mixer, rgbInputColor chan *Colo
 	for i := range config.Inputs {
 
 		switch config.Inputs[i].Type {
+		case "channel-walk":
+			go channelWalkFrameGenerator(mixer.inputs[i+1])
 		case "rainbow":
 			go rainbowFrameGenerator(mixer.inputs[i+1])
 		}
@@ -87,4 +89,24 @@ func hsbToRgb(h, s, v float64) Color {
 	g = g * 255 / sum
 	b = b * 255 / sum
 	return Color{uint8(r), uint8(g), uint8(b)}
+}
+
+func channelWalkFrameGenerator(output chan *Frame) {
+
+	channelWalk := func(color Color, output chan *Frame) {
+		frame := makeFrameOfColor(Color{0, 0, 0})
+		output <- frame
+
+		for i := 0; i < pixelCount; i++ {
+			frame.Message.SetPixelColor(i, color.R, color.G, color.B)
+			output <- frame
+			time.Sleep(25 * time.Millisecond) // roughly 60fps
+		}
+	}
+
+	for {
+		channelWalk(Color{255, 0, 0}, output)
+		channelWalk(Color{0, 255, 0}, output)
+		channelWalk(Color{0, 0, 255}, output)
+	}
 }
