@@ -24,7 +24,11 @@ func startMqtt(config *Config, mixerOutputEnabler chan bool, mixerInputSelector 
 				mixerOutputEnabler <- false
 			}
 		case config.Mqtt.Topics.Input:
-			// TODO: add inputs to config and map input name to input number
+			for i := 0; i < len(config.Inputs); i++ {
+				if config.Inputs[i].MqttMessage == message {
+					mixerInputSelector <- i + 1 // add 1 because input 0 is always solid RGB
+				}
+			}
 		case config.Mqtt.Topics.Color:
 			c, err := parseColor(message)
 			if err != nil {
