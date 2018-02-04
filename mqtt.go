@@ -12,6 +12,26 @@ import (
 )
 
 func startMqtt(config *Config, mixerOutputEnabler chan bool, mixerInputSelector chan int, rgbInputColor chan *Color) {
+	connectionMadeHandler := func(client mqtt.Client) {
+		if token := client.Subscribe(config.Mqtt.Topics.Power, 0, nil); token.Wait() && token.Error() != nil {
+			fmt.Println("Error 2")
+			fmt.Println(token.Error())
+			os.Exit(1)
+		}
+
+		if token := client.Subscribe(config.Mqtt.Topics.Input, 0, nil); token.Wait() && token.Error() != nil {
+			fmt.Println("Error 3")
+			fmt.Println(token.Error())
+			os.Exit(1)
+		}
+
+		if token := client.Subscribe(config.Mqtt.Topics.Color, 0, nil); token.Wait() && token.Error() != nil {
+			fmt.Println("Error 4")
+			fmt.Println(token.Error())
+			os.Exit(1)
+		}
+	}
+
 	messageHandler := func(client mqtt.Client, msg mqtt.Message) {
 		message := string(msg.Payload())
 		fmt.Printf("%s: %s\n", msg.Topic(), message)
@@ -40,29 +60,26 @@ func startMqtt(config *Config, mixerOutputEnabler chan bool, mixerInputSelector 
 		}
 	}
 
-	mqtt.ERROR = log.New(os.Stdout, "", 0)
-	opts := mqtt.NewClientOptions().AddBroker(config.Mqtt.Server)
-	opts.SetKeepAlive(2 * time.Second)
-	opts.SetDefaultPublishHandler(messageHandler)
-	opts.SetPingTimeout(1 * time.Second)
-
-	c := mqtt.NewClient(opts)
-	if token := c.Connect(); token.Wait() && token.Error() != nil {
-		fmt.Println(token.Error())
-		os.Exit(1)
+	connectionLostHandler := func(client mqtt.Client, err error) {
+		fmt.Println("Connection was lost, here is the error")
+		fmt.Println(err)
 	}
 
-	if token := c.Subscribe(config.Mqtt.Topics.Power, 0, nil); token.Wait() && token.Error() != nil {
-		fmt.Println(token.Error())
-		os.Exit(1)
-	}
+	mqtt.ERROR = log.New(os.Stdout, "ERROR ", 0)
+	mqtt.CRITICAL = log.New(os.Stdout, "CRITICAL ", 0)
 
-	if token := c.Subscribe(config.Mqtt.Topics.Input, 0, nil); token.Wait() && token.Error() != nil {
-		fmt.Println(token.Error())
-		os.Exit(1)
-	}
+	opts := mqtt.NewClientOptions().
+		SetKeepAlive(2 * time.Second).
+		AddBroker(config.Mqtt.Server).
+		SetOnConnectHandler(connectionMadeHandler).
+		SetDefaultPublishHandler(messageHandler).
+		SetConnectionLostHandler(connectionLostHandler).
+		SetAutoReconnect(true).
+		SetMaxReconnectInterval(time.Minute)
 
-	if token := c.Subscribe(config.Mqtt.Topics.Color, 0, nil); token.Wait() && token.Error() != nil {
+	client := mqtt.NewClient(opts)
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		fmt.Println("Error 1")
 		fmt.Println(token.Error())
 		os.Exit(1)
 	}
