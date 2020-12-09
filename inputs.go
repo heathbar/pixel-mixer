@@ -23,6 +23,8 @@ func startFrameGenerators(config *Config, mixer *Mixer, rgbInputColor chan *Colo
 			go redWaveFrameGenerator(mixer.inputs[i+1])
 		case "purple-wave":
 			go purpleWaveFrameGenerator(mixer.inputs[i+1])
+		case "blue-wave":
+			go blueWaveFrameGenerator(mixer.inputs[i+1])
 		case "opc":
 			go opcFrameForwarder(config.Inputs[i].Port, mixer.inputs[i+1])
 		}
@@ -159,6 +161,30 @@ func purpleWaveFrameGenerator(output chan *Frame) {
 				r := float64(150) + float64(60)*t
 				g := 0
 				b := math.Min(255, float64(255)+float64(30)*t)
+
+				f.Message.SetPixelColor(pixelNumber, uint8(r), uint8(g), uint8(b))
+			}
+			output <- f
+			time.Sleep(16 * time.Millisecond) // roughly 60fps
+		}
+	}
+}
+
+func blueWaveFrameGenerator(output chan *Frame) {
+	const DURATION = 10
+	const FPS = 60
+	const TOTAL_FRAMES = DURATION * FPS
+	const DELTA_PER_FRAME = 2 * math.Pi / TOTAL_FRAMES
+	f := makeFrame()
+
+	for {
+		for frameNumber := 0; frameNumber < TOTAL_FRAMES; frameNumber++ {
+
+			for pixelNumber := 0; pixelNumber < pixelCount; pixelNumber++ {
+				t := math.Sin(float64(frameNumber)*DELTA_PER_FRAME + float64(pixelNumber)*0.1)
+				r := 0
+				g := float64(120) + (float64(10)*t)*(float64(10)*t)*-t
+				b := float64(120) + (float64(10)*t)*(float64(10)*t)*t
 
 				f.Message.SetPixelColor(pixelNumber, uint8(r), uint8(g), uint8(b))
 			}
