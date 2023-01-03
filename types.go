@@ -9,6 +9,8 @@ type Config struct {
 	PixelCount int `json:"pixel-count,omitempty"`
 	Mqtt       struct {
 		Server string `json:"server"`
+		Username string `json:"username"`
+		Password string `json:"password"`
 		Topics struct {
 			Power string `json:"power"`
 			Input string `json:"input"`

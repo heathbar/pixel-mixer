@@ -16,3 +16,6 @@ pixel-mixer
 
 # test files
 test.config.json
+
+config.json.radiance
+config.json.gl_server

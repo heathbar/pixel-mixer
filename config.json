@@ -1,5 +1,5 @@
 {
-    "pixel-count": 30,
+    "pixel-count": 492,
     "mqtt": {
         "server": "tcp://localhost:1883",
         "topics": {
@@ -12,6 +12,10 @@
         {
             "type": "rainbow",
             "mqtt-message": "rainbow"
+        },
+        {
+            "type": "blue-wave",
+            "mqtt-message": "blue-wave"
         }
     ],
     "opc": {

@@ -77,6 +77,14 @@ func startMqtt(config *Config, mixerOutputEnabler chan bool, mixerInputSelector 
 		SetAutoReconnect(true).
 		SetMaxReconnectInterval(time.Minute)
 
+		if config.Mqtt.Username != "" {
+			opts.SetUsername(config.Mqtt.Username)
+		}
+	
+		if config.Mqtt.Password != "" {
+			opts.SetPassword(config.Mqtt.Password)
+		}
+
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		fmt.Println("Error 1")
